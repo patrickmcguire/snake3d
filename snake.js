@@ -52,6 +52,7 @@ function moveSnake(dir) {
   snakelets.unshift(s);
   checkFood(slast);
   checkDeath();
+  checkWin();
   redraw();
 }
 
@@ -83,6 +84,20 @@ function checkDeath() {
 
   if (dead) {
     alert('A loserar is you');
+    resetGame();
+  }
+}
+
+function checkWin() {
+  function isEmptyObject(obj) {
+    var name;
+    for (name in obj) {
+      return false;
+    }
+    return true;
+  }
+  if (isEmptyObject(foods)) {
+    alert("a winrar is you");
     resetGame();
   }
 }
