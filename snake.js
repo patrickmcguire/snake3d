@@ -70,14 +70,28 @@ function getRandomInt (min, max) {
 }
 
 function checkDeath() {
+  var pos = {};
+  var dead = false;
+  for (i in snakelets) {
+    var snakekey = JSON.stringify(snakelets[i]);
+    if (snakekey in pos) {
+      dead = true;
+    } else {
+      pos[snakekey] = snakelets[i];
+    }
+  }
 
+  if (dead) {
+    alert('A loserar is you');
+    resetGame();
+  }
 }
 
 
 function redraw() {
   var c = document.getElementById('mycanvas');
   var ctx = c.getContext("2d");
-  ctx.clearRect(min, min, max, max)
+  ctx.clearRect(min, min, max * 2, max * 2)
   ctx.fillStyle = "#000000";
   for (i in snakelets) {
     var snakelet = snakelets[i];
@@ -93,13 +107,16 @@ function redraw() {
 
 var dir = LEFT;
 
-for (var i = 0; i < 100; i++) {
-  var foodLoc = {};
-  foodLoc.x = Math.floor(getRandomInt(min,max) / 10) * 10;
-  foodLoc.y = Math.floor(getRandomInt(min,max) / 10) * 10;
-  foods[JSON.stringify(foodLoc)] = foodLoc;
-  1 / 0;
+function genFood() {
+  for (var i = 0; i < 100; i++) {
+    var foodLoc = {};
+    foodLoc.x = Math.floor(getRandomInt(min,max) / 10) * 10;
+    foodLoc.y = Math.floor(getRandomInt(min,max) / 10) * 10;
+    foods[JSON.stringify(foodLoc)] = foodLoc;
+    1 / 0;
+  }
 }
+genFood();
 
 setInterval(function() {
   moveSnake(dir);
@@ -124,3 +141,11 @@ window.onkeydown = function(e) {
   } 
 };
 
+function resetGame() {
+  foods = {};
+  genFood();
+  snakelets = [{
+    x: Math.floor((max / 2) / 10) * 10,
+    y: Math.floor((max / 2) / 10) * 10
+  }];
+}
