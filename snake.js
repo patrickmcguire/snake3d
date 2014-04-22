@@ -6,6 +6,7 @@ var DOWN = 3;
 
 var min = 0;
 var max = 500;
+var score = 0;
 
 var snakelets = [{
   x: Math.floor((max / 2) / 10) * 10,
@@ -61,6 +62,7 @@ function checkFood(slast) {
   var foodkey = JSON.stringify({x: snakelet.x, y: snakelet.y});
   if (foodkey in foods) {
     delete foods[foodkey];
+    score += 1;
     snakelets.push({x: slast.x, y: slast.y});
   }
 }
@@ -83,6 +85,7 @@ function checkDeath() {
   }
 
   if (dead) {
+    score = 0;
     alert('A loserar is you');
     resetGame();
   }
@@ -118,6 +121,9 @@ function redraw() {
     var loc = JSON.parse(indices);
     ctx.fillRect(loc.x,loc.y,9,9);
   }
+
+  var scoreEl = document.getElementById('score');
+  scoreEl.innerHTML = score;
 }
 
 var dir = LEFT;
