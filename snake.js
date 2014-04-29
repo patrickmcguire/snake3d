@@ -3,6 +3,8 @@ var LEFT = 0;
 var UP = 1;
 var RIGHT = 2;
 var DOWN = 3;
+var IN = 4;
+var OUT = 5;
 
 var min = 0;
 var max = 500;
@@ -10,7 +12,8 @@ var score = 0;
 
 var snakelets = [{
   x: Math.floor((max / 2) / 10) * 10,
-  y: Math.floor((max / 2) / 10) * 10
+  y: Math.floor((max / 2) / 10) * 10, 
+  z: Math.floor((max / 2) / 10) * 10
 }];
 var foods = {};
 
@@ -36,6 +39,7 @@ function moveSnake(dir) {
   s = {};
   s.x = first.x;
   s.y = first.y;
+  s.z = first.z;
   switch(dir) {
     case LEFT:
       s.x = clamp(s.x - 10);
@@ -49,6 +53,12 @@ function moveSnake(dir) {
     case RIGHT:
       s.x = clamp(s.x + 10);
       break;
+    case IN:
+      s.z = clamp(s.z - 10);
+      break;
+    case OUT:
+      s.z = clamp(s.z + 10);
+      break;
   }
   snakelets.unshift(s);
   checkFood(slast);
@@ -59,11 +69,11 @@ function moveSnake(dir) {
 
 function checkFood(slast) {
   var snakelet = snakelets[0];
-  var foodkey = JSON.stringify({x: snakelet.x, y: snakelet.y});
+  var foodkey = JSON.stringify({x: snakelet.x, y: snakelet.y, z: snakelet.z});
   if (foodkey in foods) {
     delete foods[foodkey];
     score += 1;
-    snakelets.push({x: slast.x, y: slast.y});
+    snakelets.push({x: slast.x, y: slast.y, z: slast.z});
   }
 }
 
@@ -107,19 +117,63 @@ function checkWin() {
 
 
 function redraw() {
+  //var c = document.getElementById('mycanvas');
+  //var ctx = c.getContext("2d");
   var c = document.getElementById('mycanvas');
-  var ctx = c.getContext("2d");
-  ctx.clearRect(min, min, max * 2, max * 2)
-  ctx.fillStyle = "#000000";
+  var gl = c.getContext('webgl');
+  gl.clearColor(1.0,1.0,1.0,1.0);
+  gl.enable(gl.DEPTH_TEST); 
+  gl.depthFunc(gl.LEQUAL); 
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+
+  var width = 9;
+
+  gl_FragColor = [0.0, 0.0, 0.0, 1.0];
+ 
   for (i in snakelets) {
     var snakelet = snakelets[i];
-    ctx.fillRect(snakelet.x,snakelet.y,9,9);
+    var x = snakelet.x;
+    var y = snakelet.y;
+    var z = snakelet.z;
+
+    var vertices = [
+      x, y, z,
+      x, y, z + width,
+      x, y + width, z,
+      x, y + width, z + width,
+      x + width, y, z,
+      x + width, y, z + width,
+      x + width, y + width, z,
+      x + width, y + width, z + width
+    ];
+
+    var snakebuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, snakebuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
   }
 
-  ctx.fillStyle = "#00FF00";
+  gl_FragColor = [0.0, 1.0, 0.0, 1.0];
   for (indices in foods) {
     var loc = JSON.parse(indices);
-    ctx.fillRect(loc.x,loc.y,9,9);
+    var x = loc.x;
+    var y = loc.y;
+    var z = loc.z;
+    var vertices = [
+      x, y, z,
+      x, y, z + width,
+      x, y + width, z,
+      x, y + width, z + width,
+      x + width, y, z,
+      x + width, y, z + width,
+      x + width, y + width, z,
+      x + width, y + width, z + width
+    ];
+
+    var foodbuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, foodbuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
   }
 
   var scoreEl = document.getElementById('score');
